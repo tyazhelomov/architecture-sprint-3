@@ -1,0 +1,48 @@
+@startuml
+title Warm House Container Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person_Ext(user, "User", "A user of the Warm House system")
+
+System_Boundary(c1, WarmHouseSystemBoundary) {
+  Container(web, "Web App", "Vue.js", "Web application that allows the user to interact with the system")
+  Container(agw, "Api Gateway", "JVM, Java", "Receives requests from the user and forwards them to the appropriate service via Kafka")
+  Container(temp_service, "Temperature Service", "JVM, Java", "Service that manages the temperature of the house")
+  ContainerDb(temp_db, "Database", "PostgreSQL", "Stores the temperature data")
+  Container(bulb_service, "Bulb Service", "JVM, Java", "Service that manages the light of the house")
+  ContainerDb(bulb_db, "Database", "PostgreSQL", "Stores the light data")
+  Container(gate_service, "Gate Service", "JVM, Java", "Service that manages the gate of the house")
+  ContainerDb(gate_db, "Database", "PostgreSQL", "Stores the gate data")
+  Container(sec_service, "Security Service", "JVM, Java", "Service that manages the security of the house")
+  ContainerDb(sec_db, "Database", "PostgreSQL", "Stores the security data")
+  ContainerQueue(kafka, "Kafka", "Apache Kafka", "Message broker for communication between external systems and services")
+}
+
+Container_Ext(sensor, "Temperature Sensor", "Raspberry Pi", "External sensor to manage temperature")
+Container_Ext(bulb, "Light Bulb", "Raspberry Pi", "External bulb to manage light")
+Container_Ext(cam, "Camera", "Raspberry Pi", "External camera to manage security")
+Container_Ext(gate, "Gate", "Raspberry Pi", "External gate to manage access")
+
+Rel_Neighbor(user, web, "Uses", "HTTPS")
+Rel(web, agw, "Forwards requests to", "HTTPS")
+Rel(agw, kafka, "Sends and receives messages via", "Kafka")
+Rel(kafka, temp_service, "Receives data from", "Kafka")
+Rel(kafka, bulb_service, "Receives data from", "Kafka")
+Rel(kafka, sec_service, "Receives data from", "Kafka")
+Rel(kafka, gate_service, "Receives data from", "Kafka")
+Rel(temp_service, temp_db, "Reads from and writes to", "JDBC, TCP")
+Rel(bulb_service, bulb_db, "Reads from and writes to", "JDBC, TCP")
+Rel(gate_service, gate_db, "Reads from and writes to", "JDBC, TCP")
+Rel(sec_service, sec_db, "Reads from and writes to", "JDBC, TCP")
+Rel(temp_service, sensor, "Reads from", "HTTP")
+Rel(bulb_service, bulb, "Controls", "HTTP")
+Rel(sec_service, cam, "Controls", "HTTP")
+Rel(gate_service, gate, "Controls", "HTTP")
+
+Rel(sensor, kafka, "Sends data to", "Kafka")
+Rel(bulb, kafka, "Sends data to", "Kafka")
+Rel(cam, kafka, "Sends data to", "Kafka")
+Rel(gate, kafka, "Sends data to", "Kafka")
+
+SHOW_LEGEND()
+@enduml

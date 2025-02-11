@@ -1,0 +1,78 @@
+@startuml
+
+title Warm House Entity-Relationship Diagram
+
+entity "User" as User {
+  *id: UUID
+  --
+  username: String
+  email: String
+  password: String
+  role: String
+}
+
+entity "House" as House {
+  *id: UUID
+  --
+  address: String
+  name: String
+  owner_id: UUID
+}
+
+entity "Device" as Device {
+  *id: UUID
+  --
+  serial_number: String
+  status: String
+  type_id: UUID
+  house_id: UUID
+}
+
+entity "DeviceType" as DeviceType {
+  *id: UUID
+  --
+  name: String
+  description: String
+}
+
+entity "Module" as Module {
+  *id: UUID
+  --
+  name: String
+  version: String
+  device_id: UUID
+}
+
+entity "TelemetryData" as TelemetryData {
+  *id: UUID
+  --
+  timestamp: DateTime
+  data: String
+  device_id: UUID
+}
+
+entity "Gate" as Gate {
+  *id: UUID
+  --
+  model: String
+  location: String
+  device_id: UUID
+}
+
+entity "TemperatureSensor" as TemperatureSensor {
+  *id: UUID
+  --
+  model: String
+  location: String
+  device_id: UUID
+}
+
+User }o--o{ House : "owns"
+House ||--o{ Device : "contains"
+Device ||--|| DeviceType : "is of type"
+Device ||--o{ Module : "has"
+Device ||--o{ TelemetryData : "generates"
+Device ||--o{ Gate : "has"
+Device ||--o{ TemperatureSensor : "connected to"
+
+@enduml

@@ -1,0 +1,101 @@
+@startuml
+
+title Warm House Code Diagram for Kafka, Sensor, Temperature Service, Gate Service
+left to right direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+class ApiGateway {
+  +void receiveRequest()
+  +void forwardRequest()
+}
+
+class Kafka {
+  +void sendMessage(topic: String, message: String)
+  +String receiveMessage(topic: String)
+  +void createTopic(name: String)
+  +void deleteTopic(name: String)
+}
+
+class TemperatureSensor {
+  +double readTemperature()
+  +void sendTemperatureData()
+  +void calibrateSensor()
+}
+
+class TemperatureController {
+  +void controlTemperature(targetTemp: double)
+  +double getCurrentTemperature()
+  +void adjustTemperature()
+}
+
+class TemperatureAPI {
+  +void getTemperature()
+  +void updateTemperatureSettings(targetTemp: double)
+}
+
+class TemperatureHandler {
+  +void processTemperatureData(data: double)
+  +void validateTemperature(data: double)
+}
+
+class TemperatureManager {
+  +void manageSensors()
+  +void aggregateTemperatureData()
+}
+
+class TemperatureDatabase {
+  +void saveTemperatureRecord(data: double)
+  +double getTemperatureRecord(id: UUID)
+}
+
+class Gate {
+  +void openGate()
+  +void closeGate()
+  +boolean getGateStatus()
+}
+
+class GateController {
+  +void openGate()
+  +void closeGate()
+  +boolean getGateStatus()
+}
+
+class GateAPI {
+  +void requestGateOpen()
+  +void requestGateClose()
+}
+
+class GateHandler {
+  +void handleGateCommand(command: String)
+  +void validateGateStatus()
+}
+
+class GateManager {
+  +void monitorGate()
+  +void manageGateAccess()
+}
+
+class GateDatabase {
+  +void saveGateState(state: String)
+  +String getGateState(id: UUID)
+}
+
+Kafka "1" -- "*" TemperatureSensor : "Receives Data From"
+Kafka "1" -- "*" TemperatureController : "Sends/Receives Data"
+Kafka "1" -- "*" GateController : "Sends/Receives Data"
+Kafka "1" -- "*" Gate : "Sends Data To"
+ApiGateway "1" -- "*" Kafka : "Uses"
+
+TemperatureSensor --> Kafka : sendsTemperatureData()
+TemperatureController --> TemperatureAPI : uses
+TemperatureAPI --> TemperatureHandler : processes
+TemperatureHandler --> TemperatureManager : manages
+TemperatureManager --> TemperatureDatabase : stores
+
+GateController --> GateAPI : controls
+GateAPI --> GateHandler : handles
+GateHandler --> GateManager : manages
+GateManager --> GateDatabase : stores
+
+@enduml
