@@ -67,7 +67,7 @@ entity "TemperatureSensor" as TemperatureSensor {
   device_id: UUID
 }
 
-User ||--o{ House : "owns"
+User }o--o{ House : "owns"
 House ||--o{ Device : "contains"
 Device ||--|| DeviceType : "is of type"
 Device ||--o{ Module : "has"
