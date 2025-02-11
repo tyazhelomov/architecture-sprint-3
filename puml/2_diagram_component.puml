@@ -1,0 +1,101 @@
+@startuml
+title Warm House Component Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+skinparam linetype polyline
+
+Person_Ext(user, "User", "A user of the Warm House system")
+
+System_Boundary(c1, WarmHouseSystemBoundary) {
+  Container_Boundary(web, "Web App") {
+    Component(web_ui, "Web UI", "Vue.js", "User interface for the web application")
+    Component(web_api, "BFF", "Node.js", "Backend API for the web application")
+    Component(bff_auth, "Auth", "Node.js", "Backend for Frontend service for authentication")
+  }
+
+  Container_Boundary(agw, "Api Gateway") {
+    Component(agw_service, "Gateway Service", "JVM, Java", "Handles incoming requests and forwards them to the appropriate service via Kafka")
+  }
+
+  Container_Boundary(temp_service, "Temperature Service") {
+    Component(temp_controller, "Temperature Controller", "JVM, Java", "Controls the temperature of the house")
+    Component(temp_api, "Temperature API", "JVM, Java", "API for the temperature service")
+    Component(temp_handler, "Temperature Handler", "JVM, Java", "Handles temperature data")
+    Component(temp_manager, "Temperature Manager", "JVM, Java", "Manages the temperature sensors")
+    Component(temp_db, "Database", "PostgreSQL", "Stores the temperature data")
+  }
+
+  Container_Boundary(bulb_service, "Bulb Service") {
+    Component(bulb_controller, "Bulb Controller", "JVM, Java", "Controls the light of the house")
+    Component(bulb_api, "Bulb API", "JVM, Java", "API for the light service")
+    Component(bulb_handler, "Bulb Handler", "JVM, Java", "Handles light data")
+    Component(bulb_manager, "Bulb Manager", "JVM, Java", "Manages the light bulbs")
+    Component(bulb_db, "Database", "PostgreSQL", "Stores the light data")
+  }
+
+  Container_Boundary(gate_service, "Gate Service") {
+    Component(gate_controller, "Gate Controller", "JVM, Java", "Controls the gate of the house")
+    Component(gate_api, "Gate API", "JVM, Java", "API for the gate service")
+    Component(gate_handler, "Gate Handler", "JVM, Java", "Handles gate data")
+    Component(gate_manager, "Gate Manager", "JVM, Java", "Manages the gate")
+    Component(gate_db, "Database", "PostgreSQL", "Stores the gate data")
+  }
+
+  Container_Boundary(sec_service, "Security Service") {
+    Component(sec_controller, "Security Controller", "JVM, Java", "Controls the security of the house")
+    Component(sec_api, "Security API", "JVM, Java", "API for the security service")
+    Component(sec_handler, "Security Handler", "JVM, Java", "Handles security data")
+    Component(sec_manager, "Security Manager", "JVM, Java", "Manages the security system")
+    Component(sec_db, "Database", "PostgreSQL", "Stores the security data")
+  }
+
+  ComponentQueue(kafka, "Kafka", "Apache Kafka", "Message broker for communication between external systems and services")
+}
+
+Component_Ext(sensor, "Temperature Sensor", "Raspberry Pi", "External sensor to manage temperature")
+Component_Ext(bulb, "Light Bulb", "Raspberry Pi", "External bulb to manage light")
+Component_Ext(cam, "Camera", "Raspberry Pi", "External camera to manage security")
+Component_Ext(gate, "Gate", "Raspberry Pi", "External gate to manage access")
+
+Rel_Neighbor(user, web_ui, "Uses", "HTTPS")
+Rel(web_ui, web_api, "Sends requests to", "HTTPS")
+Rel(web_api, agw_service, "Forwards requests to", "HTTPS")
+Rel_Neighbor(web_api, bff_auth, "Forwards requests to", "HTTPS")
+
+Rel(agw_service, kafka, "Sends and receives messages via", "Kafka")
+Rel(kafka, temp_controller, "Receives data from", "Kafka")
+Rel(kafka, bulb_controller, "Receives data from", "Kafka")
+Rel(kafka, sec_controller, "Receives data from", "Kafka")
+Rel(kafka, gate_controller, "Receives data from", "Kafka")
+
+Rel_Down(temp_controller, temp_db, "Reads from and writes to", "JDBC, TCP")
+Rel_Down(temp_controller, temp_api, "Reads from and writes to", "HTTP")
+Rel_Down(temp_api, temp_handler, "Reads from and writes to", "HTTP")
+Rel_Down(temp_handler, temp_manager, "Reads from and writes to", "HTTP")
+Rel(temp_manager, sensor, "Reads from", "HTTP")
+
+Rel_Down(bulb_controller, bulb_db, "Reads from and writes to", "JDBC, TCP")
+Rel_Down(bulb_controller, bulb_api, "Reads from and writes to", "HTTP")
+Rel_Down(bulb_api, bulb_handler, "Reads from and writes to", "HTTP")
+Rel_Down(bulb_handler, bulb_manager, "Reads from and writes to", "HTTP")
+Rel(bulb_manager, bulb, "Controls", "HTTP")
+
+Rel_Down(gate_controller, gate_db, "Reads from and writes to", "JDBC, TCP")
+Rel_Down(gate_controller, gate_api, "Reads from and writes to", "HTTP")
+Rel_Down(gate_api, gate_handler, "Reads from and writes to", "HTTP")
+Rel_Down(gate_handler, gate_manager, "Reads from and writes to", "HTTP")
+Rel(gate_manager, gate, "Controls", "HTTP")
+
+Rel_Down(sec_controller, sec_db, "Reads from and writes to", "JDBC, TCP")
+Rel_Down(sec_controller, sec_api, "Reads from and writes to", "HTTP")
+Rel_Down(sec_api, sec_handler, "Reads from and writes to", "HTTP")
+Rel_Down(sec_handler, sec_manager, "Reads from and writes to", "HTTP")
+Rel(sec_manager, cam, "Controls", "HTTP")
+
+Rel(sensor, kafka, "Sends data to", "Kafka")
+Rel(bulb, kafka, "Sends data to", "Kafka")
+Rel(cam, kafka, "Sends data to", "Kafka")
+Rel(gate, kafka, "Sends data to", "Kafka")
+
+SHOW_LEGEND()
+@enduml
